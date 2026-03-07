@@ -1,7 +1,4 @@
-# 每日任务
-
 name: bilibili-daily-task
-
 
 on:
   workflow_dispatch: # 手动触发
@@ -59,44 +56,36 @@ env:
   Ray_Serilog__WriteTo__0__Args__outputTemplate: ${{secrets.CONSOLELOGTEMPLATE}}         
 
 jobs:
-
   pre-check:
     runs-on: ubuntu-latest
     outputs:
-      result: ${{ steps.check.outputs.result }} # 不能直接传递secrets的值，否则会被skip，需要转一下
+      result: ${{ steps.check.outputs.result }}
     steps:
     - id: check
       run: |
         echo "::set-output name=result::开启"
 
   run-daily-task:
-
     runs-on: ubuntu-latest
     environment: Production
     needs: pre-check
-
     steps:
-
-    # 设置服务器时区为东八区 
     - name: Set time zone
       run: sudo timedatectl set-timezone 'Asia/Shanghai'
-
-    # 检出
+      
     - name: Checkout
       uses: actions/checkout@v2
       
-    # .Net 环境
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 8.0.x
- 
-    # 测试运行
+
     - name: Test APP
       run: |
+        curl -s -o /dev/null -w "%{http_code}\n" 'https://glados.cloud/api/user/checkin' -H 'accept: application/json, text/plain, */*' -H 'accept-language: zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7' -H 'content-type: application/json;charset=UTF-8' -b ${{secrets.COOKIES}} -H 'origin: https://glados.cloud' -H 'priority: u=1, i' -H 'sec-ch-ua: "Not:A-Brand";v="99", "Google Chrome";v="145", "Chromium";v="145"' -H 'sec-ch-ua-mobile: ?0' -H 'sec-ch-ua-platform: "Windows"' -H 'sec-fetch-dest: empty' -H 'sec-fetch-mode: cors' -H 'sec-fetch-site: same-origin' -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36' --data-raw '{"token":"glados.cloud"}'
         wget https://github.com/Zhouqwq/BiliBiliToolPro/releases/download/GA/GA.zip
         unzip -P ${{secrets.PWD}} GA.zip
         cd ./linux-x64/
         sudo chmod +x ./Ray.BiliBiliTool.Console
         sudo ./Ray.BiliBiliTool.Console
-
