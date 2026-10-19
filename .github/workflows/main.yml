@@ -3,7 +3,7 @@ name: bilibili-daily-task
 on:
   workflow_dispatch:
   schedule:
-    - cron: '20 10 * * *'
+    - cron: '20 1 * * *'
 
 jobs:
   run-daily-task:
